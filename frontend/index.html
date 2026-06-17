@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PinPoint — Visual Bug Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">📍 PinPoint</div>
+        <nav>
+            <a href="index.html" class="active">Report Bug</a>
+            <a href="dashboard.html">Dashboard</a>
+        </nav>
+    </header>
+
+    <!-- Main -->
+    <main>
+        <div class="upload-section">
+            <h2>Upload Screenshot & Pin Bug</h2>
+            <p>Upload a screenshot then click on it to pin a bug</p>
+
+            <!-- Upload Box -->
+            <div class="upload-box" id="uploadBox">
+                <input type="file" id="fileInput" accept="image/*" hidden>
+                <div id="uploadPrompt" onclick="document.getElementById('fileInput').click()">
+                    <span>🖼️</span>
+                    <p>Click to upload screenshot</p>
+                </div>
+            </div>
+
+            <!-- Canvas for annotation -->
+            <div class="canvas-container" id="canvasContainer" style="display:none">
+                <canvas id="annotationCanvas"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bug Form Popup -->
+    <div class="popup-overlay" id="popupOverlay" style="display:none">
+        <div class="popup">
+            <h3>📍 Pin Bug Here</h3>
+            <input type="text" id="bugTitle" placeholder="Bug Title" />
+            <textarea id="bugDescription" placeholder="Describe the bug..."></textarea>
+            <input type="text" id="assignedTo" placeholder="Assign to (developer name)" />
+            <div class="popup-buttons">
+                <button onclick="saveBug()">Save Bug</button>
+                <button onclick="closePopup()" class="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

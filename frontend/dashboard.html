@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PinPoint — Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-container {
+            padding: 40px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .stat-card h3 {
+            font-size: 40px;
+            color: #e94560;
+        }
+
+        .stat-card p {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .bugs-section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1a1a2e;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background: #eee;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .filter-buttons button.active,
+        .filter-buttons button:hover {
+            background: #e94560;
+            color: #fff;
+        }
+
+        .bug-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bug-info h4 {
+            font-size: 18px;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+
+        .bug-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .bug-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .OPEN { background: #fff0f3; color: #e94560; }
+        .IN_PROGRESS { background: #fff8e1; color: #f59e0b; }
+        .FIXED { background: #f0fff4; color: #10b981; }
+
+        .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .progress-btn { background: #f59e0b; color: #fff; }
+        .fix-btn { background: #10b981; color: #fff; }
+        .delete-btn { background: #ef4444; color: #fff; }
+
+        .no-bugs {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">📍 PinPoint</div>
+        <nav>
+            <a href="index.html">Report Bug</a>
+            <a href="dashboard.html" class="active">Dashboard</a>
+        </nav>
+    </header>
+
+    <div class="dashboard-container">
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="totalCount">0</h3>
+                <p>Total Bugs</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="openCount">0</h3>
+                <p>Open</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="progressCount">0</h3>
+                <p>In Progress</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="fixedCount">0</h3>
+                <p>Fixed</p>
+            </div>
+        </div>
+
+        <!-- Bugs List -->
+        <div class="bugs-section">
+            <h2>All Bugs</h2>
+
+            <div class="filter-buttons">
+                <button class="active" onclick="filterBugs('ALL', this)">All</button>
+                <button onclick="filterBugs('OPEN', this)">Open</button>
+                <button onclick="filterBugs('IN_PROGRESS', this)">In Progress</button>
+                <button onclick="filterBugs('FIXED', this)">Fixed</button>
+            </div>
+
+            <div id="bugsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let allBugs = [];
+
+        // Load bugs on page load
+        async function loadBugs() {
+            try {
+                const response = await fetch('http://localhost:8080/api/bugs');
+                allBugs = await response.json();
+                updateStats();
+                renderBugs(allBugs);
+            } catch (error) {
+                console.error('Error loading bugs:', error);
+            }
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalCount').textContent = allBugs.length;
+            document.getElementById('openCount').textContent = allBugs.filter(b => b.status === 'OPEN').length;
+            document.getElementById('progressCount').textContent = allBugs.filter(b => b.status === 'IN_PROGRESS').length;
+            document.getElementById('fixedCount').textContent = allBugs.filter(b => b.status === 'FIXED').length;
+        }
+
+        // Render bugs
+        function renderBugs(bugs) {
+            const list = document.getElementById('bugsList');
+            if (bugs.length === 0) {
+                list.innerHTML = '<div class="no-bugs">🎉 No bugs found!</div>';
+                return;
+            }
+            list.innerHTML = bugs.map(bug => `
+                <div class="bug-card">
+                    <div class="bug-info">
+                        <h4>${bug.title}</h4>
+                        <p>${bug.description || 'No description'} • Assigned to: <b>${bug.assignedTo || 'Unassigned'}</b></p>
+                    </div>
+                    <div class="bug-actions">
+                        <span class="status-badge ${bug.status}">${bug.status}</span>
+                        ${bug.status === 'OPEN' ? `<button class="action-btn progress-btn" onclick="updateStatus(${bug.id}, 'IN_PROGRESS')">In Progress</button>` : ''}
+                        ${bug.status === 'IN_PROGRESS' ? `<button class="action-btn fix-btn" onclick="updateStatus(${bug.id}, 'FIXED')">Mark Fixed</button>` : ''}
+                        <button class="action-btn delete-btn" onclick="deleteBug(${bug.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter bugs
+        function filterBugs(status, btn) {
+            document.querySelectorAll('.filter-buttons button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (status === 'ALL') renderBugs(allBugs);
+            else renderBugs(allBugs.filter(b => b.status === status));
+        }
+
+        // Update status
+        async function updateStatus(id, status) {
+            await fetch(`http://localhost:8080/api/bugs/${id}/status?status=${status}`, {
+                method: 'PUT'
+            });
+            loadBugs();
+        }
+
+        // Delete bug
+        async function deleteBug(id) {
+            if (confirm('Delete this bug?')) {
+                await fetch(`http://localhost:8080/api/bugs/${id}`, {
+                    method: 'DELETE'
+                });
+                loadBugs();
+            }
+        }
+
+        loadBugs();
+    </script>
+</body>
+</html>
